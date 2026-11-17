@@ -258,6 +258,15 @@ function conectar() {
   ws.onopen = () => { estado("● Conectado a TikFinity", "#22c55e"); setTimeout(() => estado(""), 6000); };
   ws.onclose = () => { if (Date.now() - INICIO < 20000) estado("● Esperando a TikFinity… (ábrelo)", "#f59e0b"); else estado(""); setTimeout(conectar, 3000); };
 }
+// Eventos de prueba que manda el servidor local (/disparar?tipo=...), para ensayar sin estar en directo.
+if (location.protocol.startsWith("http") && !location.hostname.endsWith("github.io")) {
+  setInterval(async () => {
+    try {
+      const r = await fetch("/cola", { cache: "no-store" });
+      if (r.ok) (await r.json()).forEach((e) => manejar(e.event, e.data));
+    } catch (e) {}
+  }, 1000);
+}
 // El aviso solo se ve los primeros segundos tras cargar, para no salir en pleno directo.
 const INICIO = Date.now();
 function estado(t, color) { const e = $("#estado"); e.textContent = t; e.style.color = color || "#fff"; e.style.display = t ? "block" : "none"; }
