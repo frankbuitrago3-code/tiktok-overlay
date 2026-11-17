@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Overlay LIVE</title>
+<meta name="viewport" content="width=1080">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --rosa:#ff2d78; --cian:#25f4ee; --oro:#ffd166; --violeta:#8b5cf6;
+    --vidrio:rgba(14,14,22,.62); --borde:rgba(255,255,255,.14);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1080px;height:1920px;overflow:hidden;background:transparent;font-family:Outfit,system-ui,sans-serif;color:#fff}
+  body.fondo{background:radial-gradient(circle at 30% 20%,#3a2b55,#0b0b12 60%)}
+  .sombra{text-shadow:0 2px 12px rgba(0,0,0,.55)}
+
+  /* ---------- METAS (arriba, centradas) ---------- */
+  #metas{position:absolute;top:210px;left:50%;transform:translateX(-50%);width:640px;display:flex;flex-direction:column;gap:14px}
+  .meta{background:var(--vidrio);backdrop-filter:blur(14px);border:1px solid var(--borde);border-radius:999px;padding:10px 22px 12px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .meta-fila{display:flex;justify-content:space-between;align-items:baseline;font-weight:700;font-size:24px;margin-bottom:8px}
+  .meta-fila .ico{margin-right:8px}
+  .meta-fila .num{font-weight:800;font-variant-numeric:tabular-nums}
+  .meta-fila .num small{opacity:.6;font-weight:600}
+  .barra{position:relative;height:12px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden}
+  .relleno{position:absolute;inset:0 auto 0 0;width:0;border-radius:999px;transition:width .9s cubic-bezier(.2,.9,.2,1)}
+  .relleno::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.55) 45%,transparent 70%);background-size:200% 100%;animation:brillo 2.4s linear infinite}
+  #meta-seg .relleno{background:linear-gradient(90deg,var(--rosa),#ff7aa8)}
+  #meta-likes .relleno{background:linear-gradient(90deg,var(--cian),#8bfffb)}
+  @keyframes brillo{from{background-position:200% 0}to{background-position:-200% 0}}
+  .meta.cumplida{animation:latido .5s ease 3}
+  @keyframes latido{50%{transform:scale(1.05);box-shadow:0 0 40px var(--oro)}}
+
+  /* ---------- ALERTA (centro) ---------- */
+  #alerta{position:absolute;top:470px;left:50%;width:760px;transform:translate(-50%,-30px) scale(.85);opacity:0;pointer-events:none}
+  #alerta.ver{animation:entra .6s cubic-bezier(.2,1.4,.3,1) forwards}
+  #alerta.salir{animation:sale .45s ease-in forwards}
+  @keyframes entra{to{transform:translate(-50%,0) scale(1);opacity:1}}
+  @keyframes sale{from{transform:translate(-50%,0) scale(1);opacity:1}to{transform:translate(-50%,-40px) scale(.9);opacity:0}}
+  .tarjeta{position:relative;border-radius:34px;padding:3px;background:conic-gradient(from var(--ang),var(--rosa),var(--cian),var(--violeta),var(--rosa));animation:gira 3s linear infinite;box-shadow:0 0 60px rgba(255,45,120,.45),0 0 90px rgba(37,244,238,.25)}
+  @property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+  @keyframes gira{to{--ang:360deg}}
+  .interior{display:flex;align-items:center;gap:28px;padding:28px 34px;border-radius:31px;background:rgba(12,12,20,.86);backdrop-filter:blur(18px)}
+  .avatar{position:relative;flex:none;width:132px;height:132px}
+  .avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;border:4px solid #fff;background:#222}
+  .avatar .insignia{position:absolute;right:-6px;bottom:-6px;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:30px;background:linear-gradient(135deg,var(--rosa),var(--violeta));border:3px solid #0c0c14}
+  .avatar .insignia img{width:44px;height:44px;border:0;border-radius:0;background:none}
+  .texto{min-width:0}
+  .etiqueta{display:inline-block;font-weight:800;font-size:22px;letter-spacing:.14em;text-transform:uppercase;padding:6px 14px;border-radius:999px;background:linear-gradient(90deg,var(--rosa),var(--violeta));margin-bottom:10px}
+  .nombre{font-weight:900;font-size:54px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:520px}
+  .detalle{font-weight:600;font-size:30px;opacity:.9;margin-top:6px}
+  .detalle b{color:var(--oro)}
+  .combo{position:absolute;right:-18px;top:-26px;font-weight:900;font-size:64px;color:var(--oro);transform:rotate(8deg);text-shadow:0 4px 0 #b8860b,0 0 30px rgba(255,209,102,.8);display:none}
+  .combo.pop{animation:pop .35s ease}
+  @keyframes pop{50%{transform:rotate(8deg) scale(1.35)}}
+  #alerta.grande .tarjeta{box-shadow:0 0 80px rgba(255,209,102,.7),0 0 140px rgba(255,45,120,.5)}
+  #alerta.grande .etiqueta{background:linear-gradient(90deg,#ffb703,var(--rosa))}
+
+  /* ---------- TOP REGALADORES (izquierda) ---------- */
+  #top{position:absolute;left:34px;top:880px;width:330px;background:var(--vidrio);backdrop-filter:blur(14px);border:1px solid var(--borde);border-radius:26px;padding:18px 18px 10px;box-shadow:0 10px 30px rgba(0,0,0,.35);display:none}
+  #top h3{font-weight:800;font-size:22px;letter-spacing:.1em;text-transform:uppercase;opacity:.85;margin:0 4px 10px}
+  .fila{display:flex;align-items:center;gap:12px;padding:8px 6px;border-radius:16px;transition:background .4s}
+  .fila.sube{background:rgba(255,209,102,.18)}
+  .pos{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:18px;color:#111}
+  .p1{background:linear-gradient(135deg,#ffe28a,#f4b400)} .p2{background:linear-gradient(135deg,#f1f5f9,#9ca3af)} .p3{background:linear-gradient(135deg,#ffc29b,#c76b29)}
+  .fila img{width:42px;height:42px;border-radius:50%;object-fit:cover;flex:none;background:#333}
+  .fila .n{flex:1;min-width:0;font-weight:700;font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fila .c{font-weight:800;font-size:20px;color:var(--oro);font-variant-numeric:tabular-nums}
+
+  /* ---------- confeti ---------- */
+  #confeti{position:absolute;inset:0;pointer-events:none}
+  #estado{position:absolute;left:20px;bottom:20px;font-size:18px;padding:6px 12px;border-radius:999px;background:rgba(0,0,0,.6);display:none}
+</style>
+</head>
+<body>
+  <div id="metas">
+    <div class="meta" id="meta-seg"><div class="meta-fila sombra"><span><span class="ico">✨</span><span class="titulo">Meta de seguidores</span></span><span class="num"><span class="act">0</span> <small>/ <span class="obj">30</span></small></span></div><div class="barra"><div class="relleno"></div></div></div>
+    <div class="meta" id="meta-likes"><div class="meta-fila sombra"><span><span class="ico">❤️</span><span class="titulo">Meta de likes</span></span><span class="num"><span class="act">0</span> <small>/ <span class="obj">10K</span></small></span></div><div class="barra"><div class="relleno"></div></div></div>
+  </div>
+
+  <div id="alerta">
+    <div class="tarjeta"><div class="interior">
+      <div class="avatar"><img id="a-foto" alt=""><div class="insignia" id="a-ins">💗</div></div>
+      <div class="texto"><span class="etiqueta" id="a-etq">Nuevo seguidor</span><div class="nombre sombra" id="a-nom">usuario</div><div class="detalle" id="a-det">¡Bienvenid@ a la familia!</div></div>
+    </div><div class="combo" id="a-combo">x1</div></div>
+  </div>
+
+  <div id="top"><h3>🏆 Top regalos</h3><div id="top-lista"></div></div>
+  <canvas id="confeti" width="1080" height="1920"></canvas>
+  <div id="estado"></div>
+
+<script>
+/* ============================================================
+   Overlay para TikTok LIVE conectado a TikFinity (ws://localhost:21213)
+   Parámetros URL: ?seg=30&likes=10000&demo=1&fondo=1&sonido=0
+   ============================================================ */
+const q = new URLSearchParams(location.search);
+const CFG = {
+  metaSeg: +q.get("seg") || 30,
+  metaLikes: +q.get("likes") || 10000,
+  sonido: q.get("sonido") !== "0",
+  demo: q.get("demo") === "1",
+};
+if (q.get("fondo") === "1") document.body.classList.add("fondo");
+const $ = (s) => document.querySelector(s);
+const AVATAR = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff2d78"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><rect width="100" height="100" fill="url(#g)"/><circle cx="50" cy="40" r="18" fill="#fff" opacity=".9"/><path d="M18 92c4-20 18-30 32-30s28 10 32 30" fill="#fff" opacity=".9"/></svg>');
+const fmt = (n) => n >= 1e6 ? (n / 1e6).toFixed(1).replace(".0", "") + "M" : n >= 1e3 ? (n / 1e3).toFixed(n >= 1e4 ? 0 : 1).replace(".0", "") + "K" : String(n);
+
+/* ---------- metas ---------- */
+const metas = {
+  seg: { el: $("#meta-seg"), act: 0, obj: CFG.metaSeg, paso: CFG.metaSeg },
+  likes: { el: $("#meta-likes"), act: 0, obj: CFG.metaLikes, doble: true },
+};
+function pintarMeta(m) {
+  m.el.querySelector(".act").textContent = fmt(m.act);
+  m.el.querySelector(".obj").textContent = fmt(m.obj);
+  m.el.querySelector(".relleno").style.width = Math.min(100, (m.act / m.obj) * 100) + "%";
+}
+function sumarMeta(m, n, absoluto) {
+  m.act = absoluto ? Math.max(m.act, n) : m.act + n;
+  while (m.act >= m.obj) {
+    m.obj = m.doble ? m.obj * 2 : m.obj + m.paso;
+    m.el.classList.remove("cumplida"); void m.el.offsetWidth; m.el.classList.add("cumplida");
+    confeti(160); sonar("meta");
+  }
+  pintarMeta(m);
+}
+Object.values(metas).forEach(pintarMeta);
+
+/* ---------- top regaladores ---------- */
+const regaladores = new Map();
+function sumarRegalo(u, monedas) {
+  const r = regaladores.get(u.id) || { ...u, c: 0 };
+  r.c += monedas; r.foto = u.foto || r.foto; regaladores.set(u.id, r);
+  const top = [...regaladores.values()].sort((a, b) => b.c - a.c).slice(0, 3);
+  $("#top").style.display = "block";
+  $("#top-lista").innerHTML = top.map((t, i) =>
+    `<div class="fila ${t.id === u.id ? "sube" : ""}"><span class="pos p${i + 1}">${i + 1}</span><img src="${t.foto || AVATAR}" onerror="this.src=AVATAR"><span class="n">${esc(t.nombre)}</span><span class="c">${fmt(t.c)}</span></div>`).join("");
+  setTimeout(() => document.querySelectorAll(".fila.sube").forEach((f) => f.classList.remove("sube")), 1500);
+}
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+/* ---------- cola de alertas ---------- */
+const cola = []; let ocupado = false; let actual = null;
+function alerta(a) {
+  // Combos del mismo regalo del mismo usuario: actualizar la alerta en pantalla.
+  if (actual && a.clave && actual.clave === a.clave) { actualizarCombo(a.combo); actual.fin = Date.now() + 3000; return; }
+  const enCola = a.clave && cola.find((x) => x.clave === a.clave);
+  if (enCola) { enCola.combo = a.combo; return; }
+  cola.push(a); siguiente();
+}
+function actualizarCombo(n) {
+  const c = $("#a-combo"); c.textContent = "x" + n; c.style.display = n > 1 ? "block" : "none";
+  c.classList.remove("pop"); void c.offsetWidth; c.classList.add("pop");
+}
+function siguiente() {
+  if (ocupado || !cola.length) return;
+  ocupado = true; actual = cola.shift();
+  const a = actual, el = $("#alerta");
+  $("#a-foto").src = a.foto || AVATAR; $("#a-foto").onerror = function () { this.src = AVATAR; };
+  $("#a-ins").innerHTML = a.giftImg ? `<img src="${a.giftImg}">` : a.icono;
+  $("#a-etq").textContent = a.etiqueta; $("#a-nom").textContent = a.nombre; $("#a-det").innerHTML = a.detalle;
+  actualizarCombo(a.combo || 1);
+  el.classList.toggle("grande", !!a.grande);
+  el.classList.remove("salir", "ver"); void el.offsetWidth; el.classList.add("ver");
+  sonar(a.sonido); if (a.confeti) confeti(a.confeti);
+  a.fin = Date.now() + (a.dur || 4500);
+  const t = setInterval(() => {
+    if (Date.now() < a.fin) return;
+    clearInterval(t); el.classList.add("salir");
+    setTimeout(() => { el.classList.remove("ver", "salir"); ocupado = false; actual = null; setTimeout(siguiente, 250); }, 450);
+  }, 200);
+}
+
+/* ---------- sonidos sintetizados (sin archivos) ---------- */
+let ac;
+function sonar(tipo) {
+  if (!CFG.sonido || !tipo) return;
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    const notas = { seguidor: [784, 1175], regalo: [659, 880, 1319], grande: [523, 659, 784, 1047, 1319], compartir: [880, 1319], meta: [523, 784, 1047, 1568] }[tipo] || [880];
+    notas.forEach((f, i) => {
+      const o = ac.createOscillator(), g = ac.createGain(), t0 = ac.currentTime + i * 0.09;
+      o.type = "triangle"; o.frequency.value = f;
+      g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.18, t0 + 0.02); g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.45);
+      o.connect(g).connect(ac.destination); o.start(t0); o.stop(t0 + 0.5);
+    });
+  } catch (e) {}
+}
+
+/* ---------- confeti ---------- */
+const cv = $("#confeti"), cx = cv.getContext("2d"); let piezas = [];
+function confeti(n) {
+  const col = ["#ff2d78", "#25f4ee", "#ffd166", "#8b5cf6", "#ffffff"];
+  for (let i = 0; i < n; i++) piezas.push({ x: 540 + (Math.random() - .5) * 500, y: 560, vx: (Math.random() - .5) * 22, vy: -Math.random() * 26 - 8, r: Math.random() * 6.28, vr: (Math.random() - .5) * .4, w: 10 + Math.random() * 10, h: 6 + Math.random() * 8, c: col[i % col.length], v: 1 });
+  if (piezas.length === n) requestAnimationFrame(animar);
+}
+function animar() {
+  cx.clearRect(0, 0, 1080, 1920);
+  piezas.forEach((p) => { p.vy += .7; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.v -= .006;
+    cx.save(); cx.globalAlpha = Math.max(p.v, 0); cx.translate(p.x, p.y); cx.rotate(p.r); cx.fillStyle = p.c; cx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); cx.restore(); });
+  piezas = piezas.filter((p) => p.y < 1950 && p.v > 0);
+  if (piezas.length) requestAnimationFrame(animar);
+}
+
+/* ---------- eventos de TikTok (formato TikFinity / TikTok-Live-Connector) ---------- */
+function usuario(d) {
+  const u = d.user || d;
+  return { id: u.uniqueId || u.userId || d.uniqueId || d.userId || Math.random(), nombre: u.nickname || d.nickname || u.uniqueId || d.uniqueId || "Alguien",
+           foto: u.profilePictureUrl || d.profilePictureUrl || (u.profilePicture && u.profilePicture.urls && u.profilePicture.urls[0]) || "" };
+}
+const ultimoShare = new Map();
+function manejar(evento, d) {
+  d = d || {};
+  if (evento === "social") { const t = (d.displayType || "").toLowerCase(); if (t.includes("follow")) evento = "follow"; else if (t.includes("share")) evento = "share"; else return; }
+  const u = usuario(d);
+  switch (evento) {
+    case "follow":
+      sumarMeta(metas.seg, 1);
+      alerta({ etiqueta: "Nuevo seguidor", icono: "💗", nombre: u.nombre, foto: u.foto, detalle: "¡Bienvenid@ a la familia!", sonido: "seguidor", confeti: 60 });
+      break;
+    case "share": {
+      const ahora = Date.now(); if (ahora - (ultimoShare.get(u.id) || 0) < 60000) return; ultimoShare.set(u.id, ahora);
+      alerta({ etiqueta: "Compartió el LIVE", icono: "🚀", nombre: u.nombre, foto: u.foto, detalle: "¡Gracias por llevarnos más lejos!", sonido: "compartir", dur: 3500 });
+      break; }
+    case "like":
+      if (d.totalLikeCount) sumarMeta(metas.likes, +d.totalLikeCount, true); else sumarMeta(metas.likes, +d.likeCount || 1);
+      break;
+    case "gift": {
+      // Regalos en racha: TikTok envía varios eventos; contamos solo al terminar la racha.
+      const racha = d.giftType === 1 && !d.repeatEnd;
+      const combo = +d.repeatCount || 1, valor = +d.diamondCount || 1, total = valor * combo;
+      const grande = total >= 100;
+      alerta({ clave: u.id + "|" + (d.giftId || d.giftName), combo, etiqueta: grande ? "¡Regalo épico!" : "Regalo", icono: "🎁",
+               giftImg: d.giftPictureUrl || (d.giftDetails && d.giftDetails.giftImage && d.giftDetails.giftImage.giftPictureUrl) || "",
+               nombre: u.nombre, foto: u.foto, detalle: `envió <b>${esc(d.giftName || "un regalo")}</b>`, sonido: grande ? "grande" : "regalo",
+               confeti: grande ? 260 : total >= 10 ? 90 : 0, grande, dur: grande ? 7000 : 4500 });
+      if (!racha) sumarRegalo(u, total);
+      break; }
+    case "subscribe":
+      alerta({ etiqueta: "Nueva suscripción", icono: "👑", nombre: u.nombre, foto: u.foto, detalle: "¡Ya eres parte del team!", sonido: "grande", confeti: 200, grande: true, dur: 6000 });
+      break;
+  }
+}
+
+/* ---------- conexión con TikFinity (reconecta sola) ---------- */
+function conectar() {
+  let ws;
+  try { ws = new WebSocket("ws://localhost:21213/"); } catch (e) { return setTimeout(conectar, 3000); }
+  ws.onmessage = (m) => { try { const j = JSON.parse(m.data); manejar(j.event, j.data); } catch (e) {} };
+  ws.onopen = () => estado("");
+  ws.onclose = () => { estado("Esperando a TikFinity…"); setTimeout(conectar, 3000); };
+}
+function estado(t) { const e = $("#estado"); e.textContent = t; e.style.display = t && CFG.demo ? "block" : "none"; }
+conectar();
+
+/* ---------- modo demostración (?demo=1) ---------- */
+if (CFG.demo) {
+  const gente = [["luna.vibes", "Luna ✨"], ["el_parcero", "El Parcero"], ["valen.rd", "Valen"], ["mariajose", "María José"]];
+  const foto = (i) => `https://i.pravatar.cc/150?img=${i + 11}`;
+  const p = (i) => ({ uniqueId: gente[i][0], nickname: gente[i][1], profilePictureUrl: foto(i) });
+  const guion = [
+    () => manejar("follow", p(0)),
+    () => manejar("like", { ...p(1), likeCount: 15, totalLikeCount: 4200 }),
+    () => manejar("gift", { ...p(1), giftName: "Rosa", giftId: 5655, diamondCount: 1, repeatCount: 5, giftType: 1, repeatEnd: true, giftPictureUrl: "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eba3a9bb85c33e017f3648eaf88d7189~tplv-obj.webp" }),
+    () => manejar("share", p(2)),
+    () => manejar("gift", { ...p(3), giftName: "Universo", giftId: 7312, diamondCount: 34999, repeatCount: 1, giftType: 2, giftPictureUrl: "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/8f471afbcebfda3841a6cc515e381f58~tplv-obj.webp" }),
+    () => manejar("follow", p(2)),
+    () => manejar("like", { ...p(0), likeCount: 30, totalLikeCount: 9800 }),
+  ];
+  let i = 0; const paso = () => { guion[i++ % guion.length](); setTimeout(paso, 5200); }; setTimeout(paso, 800);
+  sumarMeta(metas.seg, 12);
+}
+</script>
+</body>
+</html>
