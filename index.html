@@ -70,7 +70,7 @@
 
   /* ---------- confeti ---------- */
   #confeti{position:absolute;inset:0;pointer-events:none}
-  #estado{position:absolute;left:20px;bottom:20px;font-size:18px;padding:6px 12px;border-radius:999px;background:rgba(0,0,0,.6);display:none}
+  #estado{position:absolute;left:50%;top:120px;transform:translateX(-50%);font-weight:700;font-size:26px;padding:10px 22px;border-radius:999px;background:rgba(0,0,0,.75);display:none;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -248,11 +248,19 @@ function manejar(evento, d) {
 function conectar() {
   let ws;
   try { ws = new WebSocket("ws://localhost:21213/"); } catch (e) { return setTimeout(conectar, 3000); }
-  ws.onmessage = (m) => { try { const j = JSON.parse(m.data); manejar(j.event, j.data); } catch (e) {} };
-  ws.onopen = () => estado("");
-  ws.onclose = () => { estado("Esperando a TikFinity…"); setTimeout(conectar, 3000); };
+  ws.onmessage = (m) => {
+    try {
+      const j = JSON.parse(m.data);
+      const nombre = String(j.event || j.type || "").toLowerCase().replace(/^on/, "");
+      manejar(nombre === "member" ? "join" : nombre, j.data || j);
+    } catch (e) {}
+  };
+  ws.onopen = () => { estado("● Conectado a TikFinity", "#22c55e"); setTimeout(() => estado(""), 6000); };
+  ws.onclose = () => { if (Date.now() - INICIO < 20000) estado("● Esperando a TikFinity… (ábrelo)", "#f59e0b"); else estado(""); setTimeout(conectar, 3000); };
 }
-function estado(t) { const e = $("#estado"); e.textContent = t; e.style.display = t && CFG.demo ? "block" : "none"; }
+// El aviso solo se ve los primeros segundos tras cargar, para no salir en pleno directo.
+const INICIO = Date.now();
+function estado(t, color) { const e = $("#estado"); e.textContent = t; e.style.color = color || "#fff"; e.style.display = t ? "block" : "none"; }
 conectar();
 
 /* ---------- modo demostración (?demo=1) ---------- */
