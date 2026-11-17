@@ -16,5 +16,5 @@ Los navegadores bloquean que una página de internet se conecte a programas del 
 pythonw servidor.py
 ```
 
-y en LIVE Studio se añade como Enlace: `http://localhost:21300/` (resolución 1080×1920).
+y en LIVE Studio se añade como Enlace: `http://localtest.me:21300/` (resolución 1080×1920). LIVE Studio exige un dominio con punto, por eso no acepta `localhost`; `localtest.me` siempre apunta a 127.0.0.1.
 La versión de GitHub Pages sirve para ver el diseño en modo demo: `?demo=1&fondo=1`.

@@ -19,6 +19,8 @@ class Silencioso(http.server.SimpleHTTPRequestHandler):
 
     def end_headers(self):
         self.send_header("Cache-Control", "no-store")
+        # LIVE Studio comprueba el enlace con una petición desde su propia app.
+        self.send_header("Access-Control-Allow-Origin", "*")
         super().end_headers()
 
 
